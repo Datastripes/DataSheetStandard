@@ -6,6 +6,12 @@ A pure JavaScript library for parsing, serializing, and converting DSS (Data She
 - Convert CSV <-> DSS
 - Convert minimal XLSX/XLS/XLSM <-> DSS (XML only, no ZIP)
 
+DSS is a simple, human-readable text format for representing spreadsheet data, designed for easy parsing and generation in code. It supports multiple sheets, sparse data, and metadata.
+
+The full DSS specification can be found in the [README.md](https://github.com/Datastripes/DataSheetStandard/) file at the root of this repository.
+
+The library is downloadable from [npmjs](https://www.npmjs.com/package/sdk-dss/).
+
 ## Install
 
 ```
