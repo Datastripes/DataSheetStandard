@@ -1,6 +1,10 @@
 {
-  "name": "dss-js",
+  "name": "sdk-dss",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Datastripes/DataSheetStandard.git"
+  },
   "description": "Pure JS library for DSS (Data Sheet Standard) parsing, serialization, and conversion to/from CSV/XLSX/XLS/XLSM. No dependencies.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
