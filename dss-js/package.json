@@ -1,0 +1,13 @@
+{
+  "name": "dss-js",
+  "version": "1.0.0",
+  "description": "Pure JS library for DSS (Data Sheet Standard) parsing, serialization, and conversion to/from CSV/XLSX/XLS/XLSM. No dependencies.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "keywords": ["dss", "datasheet", "csv", "xlsx", "xls", "xlsm", "spreadsheet", "parser", "converter"],
+  "author": "Datastripes / ilovecsv.com / ihatecsv.com",
+  "license": "CC0-1.0"
+}
