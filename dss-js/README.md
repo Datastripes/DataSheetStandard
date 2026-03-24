@@ -1,4 +1,4 @@
-# dss-js
+# sdk-dss
 
 A pure JavaScript library for parsing, serializing, and converting DSS (Data Sheet Standard) files. No dependencies. Supports:
 
