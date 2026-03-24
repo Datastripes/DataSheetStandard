@@ -10,8 +10,9 @@ function parseDSS(dssText) {
   const lines = dssText.split(/\r?\n/);
   let i = 0;
   let metadata = undefined;
-  const sheets = {};
+  const sheets = [];
   let currentSheet = null;
+  let currentSheetObj = null;
   let currentAnch = null;
   let currentData = [];
   let activeCoord = null;
@@ -34,15 +35,27 @@ function parseDSS(dssText) {
     const line = lines[i].trim();
     if (!line || line.startsWith('#')) { i++; continue; }
     if (line.startsWith('[') && line.endsWith(']')) {
+      // Push previous sheet if exists
+      if (currentSheetObj) {
+        // Push last anchor if present
+        if (currentAnch && currentSheetObj) {
+          currentSheetObj.anchors.push({ coord: activeCoord, data: currentData });
+        }
+        // Distribuisci i dati delle anchors nelle celle corrette
+        currentSheetObj.data = buildSheetData(currentSheetObj.anchors);
+        sheets.push(currentSheetObj);
+      }
       currentSheet = line.slice(1, -1).trim();
-      sheets[currentSheet] = { anchors: [] };
+      currentSheetObj = { name: currentSheet, data: [], anchors: [] };
       currentAnch = null;
+      activeCoord = null;
+      currentData = [];
       i++;
       continue;
     }
     if (line.startsWith('@')) {
-      if (currentAnch && currentSheet) {
-        sheets[currentSheet].anchors.push({ coord: activeCoord, data: currentData });
+      if (currentAnch && currentSheetObj) {
+        currentSheetObj.anchors.push({ coord: activeCoord, data: currentData });
       }
       activeCoord = line.slice(1).trim();
       currentData = [];
@@ -51,7 +64,7 @@ function parseDSS(dssText) {
       continue;
     }
     // Data row (CSV, RFC4180, minimal)
-    if (currentAnch && currentSheet) {
+    if (currentAnch && currentSheetObj) {
       // Simple CSV split, handle quoted strings
       const row = [];
       let s = line, inQuotes = false, val = '', j = 0;
@@ -73,11 +86,57 @@ function parseDSS(dssText) {
     }
     i++;
   }
-  // Push last anchor
-  if (currentAnch && currentSheet) {
-    sheets[currentSheet].anchors.push({ coord: activeCoord, data: currentData });
+  // Push last anchor and sheet
+  if (currentSheetObj) {
+    if (currentAnch) {
+      currentSheetObj.anchors.push({ coord: activeCoord, data: currentData });
+    }
+    // Distribuisci i dati delle anchors nelle celle corrette
+    currentSheetObj.data = buildSheetData(currentSheetObj.anchors);
+    sheets.push(currentSheetObj);
   }
   return { metadata, sheets };
+
+  // Funzione di supporto: distribuisce i dati delle anchors nelle celle corrette
+  function buildSheetData(anchors) {
+    // Trova la dimensione massima necessaria
+    let maxRow = 0, maxCol = 0;
+    const placements = [];
+    for (const anchor of anchors) {
+      const { row: startRow, col: startCol } = parseCoord(anchor.coord);
+      for (let r = 0; r < anchor.data.length; r++) {
+        for (let c = 0; c < (anchor.data[r] ? anchor.data[r].length : 0); c++) {
+          const absRow = startRow + r;
+          const absCol = startCol + c;
+          if (absRow > maxRow) maxRow = absRow;
+          if (absCol > maxCol) maxCol = absCol;
+          placements.push({ row: absRow, col: absCol, value: anchor.data[r][c] });
+        }
+      }
+    }
+    // Crea matrice vuota
+    const data = Array.from({ length: maxRow + 1 }, () => Array(maxCol + 1).fill(""));
+    // Popola le celle
+    for (const p of placements) {
+      data[p.row][p.col] = p.value;
+    }
+    return data;
+  }
+
+  // Funzione di supporto: converte "A1" in {row, col}
+  function parseCoord(coord) {
+    // Esempio: "B2" => {row:1, col:1}
+    const match = /^([A-Z]+)(\d+)$/.exec(coord);
+    if (!match) return { row: 0, col: 0 };
+    const colStr = match[1];
+    const row = parseInt(match[2], 10) - 1;
+    let col = 0;
+    for (let i = 0; i < colStr.length; i++) {
+      col *= 26;
+      col += colStr.charCodeAt(i) - 65 + 1;
+    }
+    return { row, col: col - 1 };
+  }
 }
 
 /**

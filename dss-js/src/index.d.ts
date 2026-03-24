@@ -12,6 +12,8 @@ export interface DSSAnchor {
  */
 export interface DSSSheet {
   anchors: DSSAnchor[];
+  name: string;
+  data: string[][]; // 2D array of cell values
 }
 
 /**
